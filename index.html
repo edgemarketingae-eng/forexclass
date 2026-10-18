@@ -236,6 +236,9 @@ body.room .site-only{display:none}
 .poster .pl::after{content:"";border-left:22px solid var(--deep);border-top:14px solid transparent;border-bottom:14px solid transparent;margin-left:6px}
 .poster h3{font-size:clamp(18px,2.2vw,26px);font-weight:800}
 .poster p{font-size:13px;color:#cfe3df;max-width:40ch}
+.vhelp{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--accent-soft);border-top:1px solid #C6EEDB;text-decoration:none;font-size:13.5px;color:var(--emerald)}
+.vhelp b{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--deep);background:var(--accent);padding:8px 12px;border-radius:999px;white-space:nowrap}
+.vhelp.ios{display:flex}
 .deck{flex:1;position:relative;display:flex;flex-direction:column;min-height:0;background:#fff}
 .track{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;min-height:0;touch-action:pan-x pan-y}
 .track::-webkit-scrollbar{display:none}
@@ -264,6 +267,7 @@ body.room .site-only{display:none}
   .split .video,.split .slides{display:flex!important;order:0!important}
   .pane{border-radius:16px}
   .pane-h{display:none}
+  .vhelp{display:flex}
   .fsb span{display:none}
   .fsb{width:34px;padding:0;justify-content:center}
   .vbox{flex:none;aspect-ratio:16/9;width:100%}
@@ -409,6 +413,9 @@ L.forEach((l,i)=>{l.n=i+1;l.slides=l.deck?l.pages.map(p=>`s/${l.deck}-${String(p
 const TOTAL_SLIDES=L.reduce((a,l)=>a+l.slides.length,0);
 const viewUrl=id=>`https://drive.google.com/file/d/${id}/view`;
 const embedUrl=id=>`https://drive.google.com/file/d/${id}/preview`;
+/* A class with a YouTube id (unlisted is fine) embeds from YouTube, which plays inline on every phone. Otherwise the Drive player is used. */
+const ytEmbed=yt=>`https://www.youtube-nocookie.com/embed/${yt}?rel=0&modestbranding=1&playsinline=1`;
+const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 /* claude.ai preview frames block third-party players; any normal host embeds the Drive player. */
 const CAN_EMBED=!/claude/i.test(location.hostname);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -582,8 +589,9 @@ function vRoom(n){
     <section class="pane video">
       <div class="pane-h"><span class="dot"></span>Recording<span class="sp"></span><a href="${viewUrl(l.id)}" target="_blank" rel="noopener">Open in Drive ${I.ne}</a></div>
       <div class="vbox">${CAN_EMBED
-        ?`<iframe src="${embedUrl(l.id)}" title="${esc(l.t)} recording" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`
+        ?`<iframe src="${l.yt?ytEmbed(l.yt):embedUrl(l.id)}" title="${esc(l.t)} recording" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`
         :`<a class="poster" href="${viewUrl(l.id)}" target="_blank" rel="noopener">${l.thumb?`<img src="s/${l.thumb}.jpg" alt="">`:""}<span class="pl"></span><h3>${esc(l.t)}</h3><p>This claude.ai preview can't embed Google Drive, so the recording opens in a new tab. On the live site it plays right here.</p></a>`}</div>
+      ${l.yt?"":`<a class="vhelp${IS_IOS?" ios":""}" href="${viewUrl(l.id)}" target="_blank" rel="noopener"><span>${IS_IOS?"Video not starting on iPhone?":"Video not starting?"}</span><b>Watch in Google Drive ${I.ne}</b></a>`}
     </section>
     <section class="pane slides" id="slidesPane">
       <div class="pane-h"><span class="dot g"></span>Slides<span class="sp"></span>${l.slides.length?`<span class="muted" style="font-size:13px;font-weight:600">Swipe or use ← →</span>`:""}</div>
