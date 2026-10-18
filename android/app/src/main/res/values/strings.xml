@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Edge Academy</string>
+    <string name="offline_title">You\'re offline</string>
+    <string name="offline_body">Connect to the internet to watch your classes.</string>
+    <string name="retry">Try again</string>
+</resources>
