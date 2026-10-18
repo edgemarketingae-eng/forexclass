@@ -83,7 +83,26 @@ public class MainActivity extends Activity {
             web.restoreState(savedInstanceState);
             splash.setVisibility(View.GONE);
         } else {
-            web.loadUrl(HOME_URL);
+            web.loadUrl(startUrl(getIntent()));
+        }
+    }
+
+    /** A link to a page of the class site (e.g. .../forexclass/#class-3) opens that page; anything else opens home. */
+    private String startUrl(Intent intent) {
+        Uri data = intent == null ? null : intent.getData();
+        if (data != null && isOwnSite(data)) return data.toString();
+        return HOME_URL;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        Uri data = intent.getData();
+        if (data != null && isOwnSite(data)) {
+            exitFullscreen();
+            offline.setVisibility(View.GONE);
+            web.loadUrl(data.toString());
         }
     }
 
