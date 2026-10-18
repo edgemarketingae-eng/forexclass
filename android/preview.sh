@@ -26,6 +26,7 @@ shot 04-class-cards 3
 # 5: phone menu
 adb shell am start -n "$ACT" -d "${SITE}#home"
 sleep 8
+sleep 10
 adb shell input tap 975 205
 shot 05-menu 2
 adb shell input keyevent KEYCODE_BACK
@@ -37,7 +38,9 @@ adb shell input swipe 900 1350 150 1350 300
 shot 07-next-slide 3
 # tap the middle of the video to play
 adb shell input tap 540 640
-shot 08-video-play 20
+shot 08-video-play 30
+shot 08b-video-play-60s 30
+shot 08c-video-play-90s 30
 adb shell input swipe 540 1900 540 900 500
 shot 09-class-details 3
 
