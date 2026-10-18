@@ -149,6 +149,7 @@ public class MainActivity extends Activity {
                 if (request.isForMainFrame()) {
                     offline.setVisibility(View.VISIBLE);
                     splash.setVisibility(View.GONE);
+                    scheduleAutoRetry();
                 }
             }
         });
@@ -183,6 +184,39 @@ public class MainActivity extends Activity {
                 exitFullscreen();
             }
         });
+    }
+
+    /* While the offline screen shows, quietly retry every few seconds so the app recovers by itself
+       when the connection comes back. */
+    private final android.os.Handler retryHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable autoRetry = new Runnable() {
+        @Override public void run() {
+            if (offline.getVisibility() != View.VISIBLE || isFinishing()) return;
+            if (isOnline()) retryLoad(); else retryHandler.postDelayed(this, 4000);
+        }
+    };
+
+    private void scheduleAutoRetry() {
+        retryHandler.removeCallbacks(autoRetry);
+        retryHandler.postDelayed(autoRetry, 4000);
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isOnline() {
+        android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (cm == null) return true;
+        android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
+        return ni != null && ni.isConnected();
+    }
+
+    private void retryLoad() {
+        offline.setVisibility(View.GONE);
+        String current = web.getUrl();
+        if (current == null || current.startsWith("about:") || current.startsWith("data:") || current.startsWith("chrome-error:")) {
+            web.loadUrl(startUrl(getIntent()));
+        } else {
+            web.reload();
+        }
     }
 
     private void exitFullscreen() {
@@ -260,6 +294,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        retryHandler.removeCallbacks(autoRetry);
         if (web != null) {
             web.stopLoading();
             web.destroy();
@@ -325,15 +360,7 @@ public class MainActivity extends Activity {
         bg.setCornerRadius(dp(999));
         retry.setBackground(bg);
         retry.setPadding(dp(28), 0, dp(28), 0);
-        retry.setOnClickListener(v -> {
-            offline.setVisibility(View.GONE);
-            String current = web.getUrl();
-            if (current == null || current.startsWith("about:") || current.startsWith("data:")) {
-                web.loadUrl(HOME_URL);
-            } else {
-                web.reload();
-            }
-        });
+        retry.setOnClickListener(v -> retryLoad());
         l.addView(retry, new LinearLayout.LayoutParams(-2, dp(48)));
         return l;
     }

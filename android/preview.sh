@@ -13,6 +13,8 @@ adb shell settings put system screen_off_timeout 1800000
 adb shell svc power stayon true
 adb shell wm size
 adb install -r "$APK"
+# wait until the emulator has internet
+for i in $(seq 1 30); do adb shell ping -c1 -W2 8.8.8.8 >/dev/null 2>&1 && break; sleep 3; done
 
 # 1-2: launch, splash then home
 adb shell am start -n "$ACT"
