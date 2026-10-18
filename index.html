@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Edge Learning</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Archivo+Black&display=swap">
+<style>
+/* Layout: soft mint learning marketplace. Rounded white nav floating on a mint hero, chip-filtered class grid of rounded cards,
+   and a split-screen classroom: Drive recording on one side, the class slide deck on the other, both in one view. */
+:root{
+  --bg:#ffffff; --tint:#EEF8F3; --tint-2:#DDF2E8; --fg:#132322; --fg-2:#5b6b6a; --line:#dde9e4; --card:#ffffff;
+  --primary:#03624C; --primary-fg:#ffffff; --green:#08E186; --accent-text:#03624C; --ink:#021A1A; --gold:#F2B33D;
+  --head:"Outfit",Arial,Helvetica,sans-serif; --display:"Archivo Black","Arial Black",sans-serif;
+  --r:14px; --shadow:0 10px 30px -12px rgba(3,98,76,.22);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#081413; --tint:#0d1f1d; --tint-2:#123029; --fg:#eaf4f1; --fg-2:#9db5b0; --line:#1d3631; --card:#0f1f1d;
+  --primary:#08E186; --primary-fg:#021A1A; --accent-text:#08E186; --shadow:0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#081413; --tint:#0d1f1d; --tint-2:#123029; --fg:#eaf4f1; --fg-2:#9db5b0; --line:#1d3631; --card:#0f1f1d;
+  --primary:#08E186; --primary-fg:#021A1A; --accent-text:#08E186; --shadow:0 10px 30px -12px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--head);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--ink)}
+a{color:var(--accent-text)}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+@media (max-width:600px){.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
+.hl{color:var(--accent-text);position:relative;white-space:nowrap}
+.hl svg{position:absolute;left:0;bottom:-10px;width:100%;height:12px}
+.swoosh{display:block;width:84px;height:12px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;border:1.5px solid transparent;white-space:nowrap}
+.btn-p{background:var(--primary);color:var(--primary-fg)}
+.btn-p:hover{filter:brightness(1.08)}
+.btn-o{border-color:var(--primary);color:var(--accent-text);background:transparent}
+.btn-o:hover{background:var(--tint)}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:6px;font-size:12px;font-weight:600;background:var(--tint-2);color:var(--accent-text)}
+.muted{color:var(--fg-2)}
+
+/* top strip + nav */
+.strip{background:var(--ink);color:#d9ecea;font-size:13px}
+.strip .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:40px}
+.strip b{color:var(--green);font-weight:600}
+.strip a{color:#d9ecea;text-decoration:none}
+.nav-shell{background:var(--tint);padding-block:18px 0}
+.nav{display:flex;align-items:center;gap:24px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;box-shadow:0 2px 0 rgba(3,98,76,.04)}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--fg);flex:none}
+.logo svg{width:34px;height:34px}
+.logo .w{font-family:var(--display);font-size:22px;line-height:1;display:block}
+.logo .d{display:block;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;margin-top:2px}
+.logo .d b{font-weight:800}
+.links{display:flex;gap:26px;margin:0 auto}
+.links a{color:var(--fg);text-decoration:none;font-weight:500;font-size:15px}
+.links a:hover,.links a[aria-current="page"]{color:var(--accent-text)}
+.nav-r{display:flex;gap:12px;align-items:center}
+.menu-btn{display:none;width:42px;height:42px;border-radius:8px;border:1px solid var(--line);place-items:center}
+@media (max-width:900px){
+  .links{display:none;position:absolute;left:16px;right:16px;top:100%;margin-top:8px;flex-direction:column;gap:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;z-index:20;box-shadow:var(--shadow)}
+  .links.open{display:flex}.links a{padding:12px}
+  .nav{position:relative}.menu-btn{display:grid}.nav-r .btn-o{display:none}
+  .strip .hide-sm{display:none}
+}
+@media (max-width:480px){.nav-r .btn-p{display:none}.nav{justify-content:space-between}}
+
+/* hero */
+.hero{background:var(--tint);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:56px 64px;position:relative}
+.dash{position:absolute;left:0;top:18px;width:70px;opacity:.9}
+.kicker{color:var(--accent-text);font-weight:600;margin-bottom:12px}
+.hero h1{font-size:clamp(34px,4.4vw,52px);line-height:1.15;font-weight:600;letter-spacing:-.01em}
+.hero p{max-width:46ch;color:var(--fg-2);margin:22px 0 28px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero-art{position:relative;justify-self:center;width:min(460px,100%)}
+.hero-art .frame{border-radius:28px;overflow:hidden;aspect-ratio:1/1.04;max-width:100%;box-shadow:var(--shadow);border:6px solid var(--card)}
+.hero-art .frame img{width:100%;height:100%;object-fit:cover}
+.bubble{position:absolute;background:var(--card);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center;font-size:13px;color:var(--fg-2)}
+.bubble b{display:block;font-size:20px;color:var(--fg);line-height:1.1}
+.bubble.circle{flex-direction:column;justify-content:center;gap:0;width:116px;height:116px;border-radius:50%;background:var(--primary);color:var(--primary-fg);text-align:center;left:-46px;top:34%}
+.bubble.circle b{color:var(--primary-fg);font-size:28px}
+.bubble.tr{right:-24px;top:-14px}
+.bubble.bl{left:-30px;bottom:24px}
+.bubble i{width:38px;height:38px;border-radius:10px;background:var(--tint-2);display:grid;place-items:center;color:var(--accent-text);font-style:normal;font-weight:700}
+.bubble i svg{width:20px;height:20px}
+@media (max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-block:32px 48px}.hero-art{width:min(380px,82%)}.bubble.circle{left:-28px;width:96px;height:96px}.bubble.tr{right:-14px}.bubble.bl{left:-18px}}
+
+/* section heads */
+.sec{padding-block:64px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.sec-h h2{font-size:clamp(26px,3vw,34px);font-weight:600}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 16px;width:min(340px,100%);background:var(--card)}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:14px;color:var(--fg);outline:none}
+.search span{width:36px;height:36px;border-radius:8px;background:var(--tint-2);display:grid;place-items:center;color:var(--accent-text)}
+
+/* chips row */
+.chips-box{background:var(--tint);border-radius:var(--r);padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:28px}
+.chips{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;flex:1;scroll-behavior:smooth}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 22px;font-weight:500;font-size:14px}
+.chips button[aria-pressed="true"]{border-color:var(--primary);color:var(--accent-text);box-shadow:inset 0 0 0 1px var(--primary)}
+.circ{width:34px;height:34px;flex:none;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:12px;text-decoration:none;color:var(--fg);transition:transform .2s,box-shadow .2s;min-width:0}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card .th{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/10;max-width:100%;background:var(--tint)}
+.card .th img{width:100%;height:100%;object-fit:cover}
+.card .badge{position:absolute;left:10px;top:10px;background:rgba(2,26,26,.86);color:#fff;font-size:12px;font-weight:600;padding:3px 9px;border-radius:6px}
+.card .done{position:absolute;right:10px;top:10px;background:var(--green);color:#021A1A;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px}
+.card .who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-2);padding:0 4px}
+.card .who .av{width:28px;height:28px;border-radius:50%;overflow:hidden;flex:none}
+.card .who .av svg{width:28px;height:28px}
+.card .who .chip{margin-left:auto}
+.card h3{font-size:17px;font-weight:600;line-height:1.3;padding:0 4px;min-height:2.6em}
+.card .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--fg-2);padding:0 4px}
+.card .meta span{display:flex;gap:6px;align-items:center}
+.card .meta svg{width:15px;height:15px;color:var(--accent-text)}
+.card .foot{background:var(--tint);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+.card .foot b{color:var(--accent-text);font-size:15px;white-space:nowrap}
+.card .foot .prog{font-size:12px;color:var(--fg-2);font-weight:500;text-align:right}
+.th-gen{position:absolute;inset:0;background:radial-gradient(120% 120% at 90% 0%,#0C3B40,#021A1A 70%);color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+.th-gen small{color:#08E186;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.th-gen b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.05;text-transform:uppercase}
+.th-gen svg{position:absolute;right:12px;top:14px;width:48%;opacity:.55}
+.empty{grid-column:1/-1;text-align:center;padding:40px;border:1px dashed var(--line);border-radius:var(--r);color:var(--fg-2)}
+
+/* path */
+.path{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.path a{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;text-decoration:none;color:var(--fg);display:flex;flex-direction:column;gap:6px;min-width:0}
+.path a:hover{border-color:var(--primary)}
+.path .n{width:40px;height:40px;border-radius:10px;background:var(--tint-2);color:var(--accent-text);display:grid;place-items:center;font-weight:700;margin-bottom:6px}
+.path .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.path .bar i{display:block;height:100%;background:var(--green)}
+@media (max-width:980px){.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.path{grid-template-columns:1fr}}
+
+/* cta */
+.cta{background:var(--tint);border-radius:18px;padding:44px clamp(24px,5vw,64px);display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:28px;align-items:center;position:relative;overflow:hidden}
+.cta small{color:var(--accent-text);font-weight:600;font-size:15px}
+.cta h2{font-size:clamp(24px,3vw,32px);font-weight:600;margin-top:10px;line-height:1.35}
+.cta .doodle{width:120px;color:var(--accent-text)}
+@media (max-width:760px){.cta{grid-template-columns:1fr}.cta .doodle{display:none}}
+
+/* footer */
+.ftr{background:var(--ink);color:#c9dcda;margin-top:64px}
+.ftr .wrap{padding-block:48px 28px}
+.ftr .cols{display:grid;grid-template-columns:1.4fr repeat(3,minmax(0,1fr));gap:28px}
+.ftr h4{color:#fff;margin:0 0 12px;font-size:16px;font-weight:600}
+.ftr a{display:block;color:#c9dcda;text-decoration:none;padding:4px 0;font-size:14px}
+.ftr a:hover{color:#08E186}
+.ftr .logo{color:#fff}
+.ftr .bot{border-top:1px solid #0C3B40;margin-top:32px;padding-top:18px;font-size:12px;color:#8fb0ab;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:760px){.ftr .cols{grid-template-columns:1fr 1fr}}
+
+/* outline + learning */
+.pagehead{background:var(--tint)}
+.pagehead .wrap{padding-block:44px 52px}
+.pagehead h1{font-size:clamp(28px,3.6vw,42px);font-weight:600;line-height:1.3}
+.pagehead p{color:var(--fg-2);margin:14px 0 0;max-width:62ch}
+.crumb{font-size:14px;color:var(--fg-2);margin-bottom:10px}
+.crumb a{text-decoration:none}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:32px;align-items:start}
+@media (max-width:960px){.two{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+.learn-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 24px;font-size:14px}
+.learn-g div{display:flex;gap:10px}
+.learn-g div::before{content:"";flex:none;width:18px;height:18px;border-radius:50%;background:var(--tint-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2303624C' stroke-width='3.5'%3E%3Cpath d='m6 12 4 4 8-8'/%3E%3C/svg%3E") center/11px no-repeat;margin-top:2px}
+@media (max-width:620px){.learn-g{grid-template-columns:1fr}}
+.acc{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.acc details+details{border-top:1px solid var(--line)}
+.acc summary{list-style:none;display:flex;gap:12px;align-items:center;padding:16px 20px;background:var(--tint);cursor:pointer;font-weight:600}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary small{margin-left:auto;color:var(--fg-2);font-weight:500}
+.acc a{display:flex;gap:12px;align-items:center;padding:13px 20px;text-decoration:none;color:var(--fg);font-size:15px}
+.acc a:hover{background:var(--tint)}
+.acc a .r{margin-left:auto;color:var(--fg-2);font-size:13px;white-space:nowrap}
+.acc a svg{width:18px;height:18px;color:var(--accent-text);flex:none}
+.side ul{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.side li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:10px}
+.progress-big{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:12px 0 6px}
+.progress-big i{display:block;height:100%;background:var(--green)}
+
+/* ======= CLASSROOM ======= */
+body.room .site-only{display:none}
+.room-top{background:var(--ink);color:#eaf4f1;position:sticky;top:env(safe-area-inset-top,0px);z-index:40}
+.room-top .in{display:flex;align-items:center;gap:14px;height:60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.room-top .logo svg{width:32px;height:32px}
+.room-top .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.room-top .t small{color:#08E186;font-weight:600;margin-right:8px;font-size:13px}
+.seg{display:flex;background:#0C3B40;border-radius:8px;padding:3px}
+.seg button{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:600;color:#cfe3df;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:#08E186;color:#021A1A}
+.rbtn{height:36px;padding:0 12px;border-radius:8px;border:1px solid #1f4a4f;color:#eaf4f1;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.rbtn:hover{border-color:#08E186}
+.rbtn:disabled{opacity:.35;cursor:default}
+@media (max-width:760px){.room-top .hide-sm{display:none}.room-top .in{gap:8px}}
+
+.stage-wrap{background:#04100f;padding-block:14px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;height:calc(100vh - 60px - 28px - env(safe-area-inset-top,0px));min-height:420px;max-height:820px}
+.split.v-only{grid-template-columns:minmax(0,1fr)}
+.split.s-only{grid-template-columns:minmax(0,1fr)}
+.split.v-only .pane.slides,.split.s-only .pane.video{display:none}
+.split.swap .pane.video{order:2}
+.pane{background:#0a1b1a;border:1px solid #143230;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;min-height:0}
+.pane-h{display:flex;align-items:center;gap:10px;padding:8px 14px;min-height:46px;border-bottom:1px solid #143230;color:#cfe3df;font-size:13px;font-weight:600}
+.pane-h .dot{width:8px;height:8px;border-radius:50%;background:#FF6B6B;box-shadow:0 0 0 4px rgba(255,107,107,.18)}
+.pane-h .dot.g{background:#08E186;box-shadow:0 0 0 4px rgba(8,225,134,.18)}
+.pane-h .sp{flex:1}
+.pane-h a{color:#08E186;text-decoration:none;font-weight:600}
+.pane-h .rbtn{height:30px}
+.vbox{flex:1;position:relative;background:#000;min-height:0}
+.vbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.poster{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;color:#fff;text-decoration:none;background:radial-gradient(120% 120% at 80% 0%,#0C3B40,#021A1A 70%)}
+.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(3px) brightness(.32)}
+.poster>*{position:relative}
+.poster .pl{width:78px;height:78px;border-radius:50%;background:#08E186;display:grid;place-items:center;box-shadow:0 0 0 10px rgba(8,225,134,.18);transition:transform .2s}
+.poster:hover .pl{transform:scale(1.06)}
+.poster .pl::after{content:"";border-left:24px solid #021A1A;border-top:15px solid transparent;border-bottom:15px solid transparent;margin-left:6px}
+.poster h3{font-size:clamp(20px,2.4vw,30px);font-weight:600;max-width:22ch}
+.poster p{margin:0;font-size:13px;color:#cfe3df;max-width:40ch}
+.deck{flex:1;position:relative;display:flex;flex-direction:column;min-height:0;background:#fff}
+.track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;min-height:0}
+.track::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:center;display:grid;place-items:center;min-height:0;background:#fff}
+.slide img{width:100%;height:100%;object-fit:contain}
+.dnav{position:absolute;top:calc(50% - 40px);width:42px;height:42px;border-radius:50%;background:rgba(2,26,26,.82);color:#fff;display:grid;place-items:center;z-index:2}
+.dnav.l{left:10px}.dnav.r{right:10px}
+.dnav:disabled{opacity:0;pointer-events:none}
+.dbar{display:flex;gap:10px;align-items:center;padding:8px 10px;background:#0a1b1a;color:#eaf4f1;border-top:1px solid #143230}
+.dbar .c{font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap;min-width:56px}
+.thumbs{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.thumbs::-webkit-scrollbar{display:none}
+.thumbs button{flex:0 0 64px;height:45px;border-radius:4px;overflow:hidden;border:2px solid transparent;opacity:.55;background:#fff}
+.thumbs button img{width:100%;height:100%;object-fit:cover}
+.thumbs button[aria-current="true"]{opacity:1;border-color:#08E186}
+.noslides{flex:1;display:grid;place-items:center;text-align:center;color:#9db5b0;padding:24px;background:#0a1b1a}
+.noslides b{display:block;color:#fff;font-size:18px;margin-bottom:6px}
+.pane.full{position:fixed;inset:0;z-index:100;border-radius:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+@media (max-width:900px){
+  .split,.split.v-only,.split.s-only{grid-template-columns:minmax(0,1fr);height:auto;max-height:none;min-height:0}
+  .split .pane{display:flex!important}
+  .split .pane.video .vbox{aspect-ratio:16/9;flex:none}
+  .split .pane.slides .deck .track{aspect-ratio:1.414/1;flex:none}
+  .seg{display:none}
+}
+
+.below{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;padding-block:28px 56px;align-items:start}
+@media (max-width:960px){.below{grid-template-columns:1fr}}
+.cls-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+.cls-head h1{font-size:clamp(24px,2.8vw,32px);font-weight:600}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:18px 0 20px;overflow-x:auto}
+.tabs button{padding:10px 14px;font-weight:600;color:var(--fg-2);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent-text);border-color:var(--primary)}
+.note{width:100%;min-height:180px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);padding:14px;font:inherit;resize:vertical}
+.res{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.res .ic{width:44px;height:44px;border-radius:10px;background:var(--tint-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--accent-text);flex:none}
+.res div{flex:1;min-width:0}
+.curr{border:1px solid var(--line);border-radius:var(--r);position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);max-height:calc(100vh - 96px);overflow-y:auto;background:var(--card)}
+@media (max-width:960px){.curr{position:static;max-height:none}}
+.curr-h{padding:16px 18px;border-bottom:1px solid var(--line);background:var(--tint)}
+.curr-h b{font-size:16px}
+.curr-h .progress-big{margin:10px 0 4px}
+.curr .mh{padding:14px 18px 6px;font-size:12px;font-weight:700;color:var(--fg-2);text-transform:uppercase;letter-spacing:.08em}
+.citem{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:10px 18px}
+.citem:hover{background:var(--tint)}
+.citem.active{background:var(--tint-2)}
+.citem .num{width:28px;height:28px;border-radius:8px;background:var(--tint);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--accent-text);flex:none}
+.citem.active .num{background:var(--primary);color:var(--primary-fg)}
+.citem .num.ok{background:var(--green);color:#021A1A}
+.citem .tt{font-size:14px;font-weight:500;display:block}
+.citem .sb{font-size:12px;color:var(--fg-2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+
+<div class="site-only">
+  <div class="strip"><div class="wrap">
+    <span>Forex Trading Program · <b>14 recorded classes</b> with slides</span>
+    <span class="hide-sm"><a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">edgeacademy.ae ↗</a></span>
+  </div></div>
+  <div class="nav-shell"><div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="#home" id="logoA"></a>
+      <div class="links" id="links">
+        <a href="#home" data-r="home">Home</a>
+        <a href="#classes" data-r="classes">All Classes</a>
+        <a href="#outline" data-r="outline">Course Outline</a>
+        <a href="#learning" data-r="learning">My Learning</a>
+        <a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">Edge Academy ↗</a>
+      </div>
+      <div class="nav-r">
+        <a class="btn btn-o" href="#learning" style="height:40px">My progress</a>
+        <a class="btn btn-p" href="#class-1" id="navCta" style="height:40px">Start Class 1</a>
+        <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </nav>
+  </div></div>
+</div>
+
+<main id="view"></main>
+
+<footer class="ftr site-only"><div class="wrap">
+  <div class="cols">
+    <div><a class="logo" href="#home" id="logoF"></a><p style="max-width:34ch;font-size:14px;margin-top:14px">Recorded classes from the Edge Trading Academy forex program, from first currency pair to order blocks.</p></div>
+    <div><h4>Learn</h4><a href="#classes">All classes</a><a href="#outline">Course outline</a><a href="#learning">My learning</a></div>
+    <div><h4>Modules</h4><a href="#classes" data-mod="0">Forex Foundations</a><a href="#classes" data-mod="2">Technical Analysis</a><a href="#classes" data-mod="4">Smart Money Concepts</a></div>
+    <div><h4>Edge</h4><a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">edgeacademy.ae</a><a href="https://drive.google.com/drive/u/0/folders/1obKEM8mnOUr4eGRdvCj5LysDaQes75Wr" target="_blank" rel="noopener">PDF notes folder</a></div>
+  </div>
+  <div class="bot"><span>© Edge Trading Academy</span><span>Educational content only. Not financial advice.</span></div>
+</div></footer>
+
+<script>
+/* ============ DATA ============ */
+const PDF_FOLDER="https://drive.google.com/drive/u/0/folders/1obKEM8mnOUr4eGRdvCj5LysDaQes75Wr";
+const MODULES=["Forex Foundations","Platforms & Tools","Technical Analysis","Risk & Fundamentals","Smart Money Concepts"];
+const MOD_BLURB=["How the currency market works, pips and lots, and reading candles.","TradingView for analysis, MT5 for execution.","Structure, Fibonacci and chart patterns.","Capital management and high-impact news.","Liquidity, FVGs and order blocks."];
+const R=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+const L=[
+ {m:0,t:"What is Forex Trading",id:"1QxguVYCygBDJsqYWH3SN30oDJ5qyRRy_",deck:"c1",pages:R(1,19),thumb:"c1-07",
+  d:"Starts with physical versus digital trading and the share market, then moves into forex: why it runs round the clock with around $8 trillion traded daily, who the participants are, what brokers do, and how currency pairs are grouped. Closes with commodities and crypto.",
+  w:["Physical vs digital trading","Foreign and domestic institutional investors","Retailers, institutions and liquidity providers","Major, minor and exotic pairs","Base and quote currency","Gold, silver, oil and crypto symbols"]},
+ {m:0,t:"Pip and Lot Size Calculation",id:"1DhIdM6p84JY9vBPP58Od6oQmHWfLuciy",deck:"c2",pages:R(1,12),thumb:"c2-04",
+  d:"The units every trade is measured in: trading terms and session time zones, pips and pipettes on 5-, 3- and 2-digit quotes, micro to standard lots, and profit and loss worked examples on EURUSD, USDJPY and XAUUSD.",
+  w:["Long, short, spread and swap","Market time zones","Pip vs pipette","Micro 0.01, mini 0.10, standard 1.00","Calculating profit and loss","Practice P/L questions"]},
+ {m:0,t:"Candlestick Patterns",id:"19CHStCkxAq54Gh8vERz_nvNpOBtY04P1",deck:"c3",pages:R(1,26),thumb:"c3-05",
+  d:"A full pattern library: single-candle signals like the hammer, shooting star, marubozu and doji; two-candle setups like engulfing, harami and tweezers; and three-candle formations such as morning star and three white soldiers.",
+  w:["Bullish and bearish candle anatomy","Hammer, hanging man, shooting star, doji","Bullish and bearish engulfing","Harami, piercing, dark cloud cover","Morning and evening star","Soldiers, crows and three methods"]},
+ {m:1,t:"How to Use TradingView",id:"13aadIK39eN33YbHeiQG9XtLt9LRnDnqc",deck:null,pages:[],thumb:null,
+  d:"A screen-share walkthrough of TradingView for chart analysis: layouts, timeframes, drawing tools, indicators and alerts. This class is video only.",
+  w:["Chart layout and timeframes","Drawing tools","Indicators","Price alerts"]},
+ {m:1,t:"How to Use MetaTrader",id:"1I5WraAFvE5fWCyZ9bUOBCuhGc-y_LRpT",deck:"c4",pages:R(21,25),thumb:"c4-22",
+  d:"Placing trades on MT5: market execution and each pending order type, with when to use a buy limit, sell limit, buy stop or sell stop.",
+  w:["Market execution","Buy limit and sell limit","Buy stop and sell stop","Stop loss and take profit"]},
+ {m:2,t:"Market Structure Analysis",id:"1ZLx1CU7RsZ_9W_bmwS9PMsd_TO4jzTiB",deck:"c5",pages:R(1,15),thumb:"c5-04",
+  d:"Identifying the trend before anything else: uptrends, downtrends and ranges, impulse and correction waves, trendlines, and support and resistance.",
+  w:["Higher highs and higher lows","Lower highs and lower lows","Sideways markets","Impulse vs correction","Trendlines","Support and resistance"]},
+ {m:2,t:"How to Use Fibonacci",id:"1eJFzt7pG69wAhtnqBmqpc0Ywepjeh_Fe",deck:null,pages:[],thumb:null,
+  d:"Drawing Fibonacci retracements on a valid swing to find pullback zones, and using them with market structure. This class is video only.",
+  w:["Picking the swing","Key retracement levels","Confluence with structure","Planning targets"]},
+ {m:2,t:"Chart Patterns 1",id:"1v1tCPhqpHsfT8E2Z-mrKWWf2eE7jptzN",deck:"c67",pages:R(1,12),thumb:"c67-05",
+  d:"Continuation and reversal patterns: bullish and bearish flags, pennants, double and triple tops and bottoms, head and shoulders, and the inverted head and shoulders.",
+  w:["Continuation, bilateral, reversal","Bull and bear flag and pole","Pennants","Double and triple tops and bottoms","Head and shoulders","Inverted head and shoulders"]},
+ {m:2,t:"Chart Patterns 2",id:"1WRawWkPWluHSlUOPc4A7PDnSTaeyxhp_",deck:"c67",pages:[1,...R(13,20)],thumb:"c67-14",
+  d:"Bilateral triangle patterns: how ascending, descending and symmetrical triangles are built, what the flat and sloping lines tell you, and which way the breakout usually goes.",
+  w:["Ascending triangle","Descending triangle","Symmetrical triangle","Reading pattern structure"]},
+ {m:3,t:"Risk & Money Management",id:"1jLhUD2kgU6lhaYlSztTGxRMCet2bi1fm",deck:"c4",pages:R(1,20),thumb:"c4-05",
+  d:"A worked capital plan on a $5,000 account: 1% daily risk, how 1:1, 1:1.5 and 1:2 risk-reward change the win rate you need, position sizing with a risk calculator, and what 5% a month compounds to over two, three and five years.",
+  w:["1% risk per day on $5,000","Risk-reward vs win rate","Monthly plan at 50% accuracy","Position sizing in 3 steps","Compounding over 2, 3 and 5 years"]},
+ {m:3,t:"Major Forex News",id:"1KDn6F-Ao_-0ByFCgo90GG7ptKjxuObw5",deck:"c8",pages:R(1,13),thumb:"c8-10",
+  d:"The nine US releases that move the dollar: CPI, PPI, retail sales, GDP, the FOMC decision, Powell speeches, trade balance, jobless claims and NFP, with when each comes out and which way it pushes USD.",
+  w:["CPI and PPI","Retail sales and GDP","FOMC and Powell","Trade balance and jobless claims","Non-Farm Payrolls","Summary table"]},
+ {m:4,t:"What is Liquidity",id:"1d139aSTyy1N8ExmBvPHsJoS5hg9EuUbN",deck:"c9",pages:R(1,7),thumb:"c9-03",
+  d:"Liquidity as the place where stop losses and pending orders cluster: why price is drawn to it, where it usually sits, and a simple build-up to reversal model.",
+  w:["What liquidity is","Why price goes to liquidity","Highs, lows and round numbers","Build-up to reversal model"]},
+ {m:4,t:"FVG & BPR",id:"1ndp5WlAYqyTcdNiiBIa2apMJ7oTJ1aZV",deck:"c10",pages:R(1,4),thumb:"c10-02",
+  d:"Fair value gaps, where price moves so fast it skips an area and later returns to it, and the balanced price range that forms when two opposite gaps overlap.",
+  w:["How a fair value gap forms","Bullish and bearish FVG","Balanced price range","Gaps as entry areas"]},
+ {m:4,t:"Order Block (Supply & Demand Zone)",id:"1F52wb1aiuCL9tLCqPngrAEcLoq-V_zuO",deck:"c11",pages:R(1,4),thumb:"c11-03",
+  d:"Where big players place orders before a strong move: order blocks, and how to mark demand (buy) and supply (sell) zones that price often returns to.",
+  w:["What an order block is","Demand zone","Supply zone","Trading the return to a zone"]}
+];
+L.forEach((l,i)=>{l.n=i+1;l.slides=l.deck?l.pages.map(p=>`s/${l.deck}-${String(p).padStart(2,"0")}.jpg`):[]});
+const TOTAL_SLIDES=L.reduce((a,l)=>a+l.slides.length,0);
+const viewUrl=id=>`https://drive.google.com/file/d/${id}/view`;
+const embedUrl=id=>`https://drive.google.com/file/d/${id}/preview`;
+/* claude.ai artifact frames block third-party players; on any normal host the Drive player embeds. */
+const CAN_EMBED=!/claude/i.test(location.hostname);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+
+/* ============ STATE ============ */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let done=new Set(store.get("edge.done",[]));
+let slidePos=store.get("edge.slide",{});
+let layout=store.get("edge.layout","split");
+let swapped=store.get("edge.swap",false);
+let filterMod=-1,searchQ="";
+const saveDone=()=>store.set("edge.done",[...done]);
+const pct=()=>Math.round(done.size/L.length*100);
+const nextUp=()=>L.find(l=>!done.has(l.n))||L[0];
+
+/* ============ PIECES ============ */
+const MARK=`<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#08E186"/><path d="M9 23 L22 10 M13 10 H22 V19" stroke="#021A1A" stroke-width="4" fill="none" stroke-linecap="square"/></svg>`;
+const LOGO=`${MARK}<span><span class="w">EDGE</span><span class="d"><b>Trading</b> Academy</span></span>`;
+document.getElementById("logoA").innerHTML=LOGO;document.getElementById("logoF").innerHTML=LOGO;
+const SW=`<svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9 C 50 2, 120 1, 197 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+const SWOOSH=`<svg class="swoosh" viewBox="0 0 84 12" aria-hidden="true" style="color:var(--accent-text)"><path d="M2 9 C 25 2, 55 2, 82 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M14 11 C 32 7, 52 7, 70 10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/></svg>`;
+const I={
+ play:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z" fill="currentColor"/></svg>`,
+ slides:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+ l:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 5-7 7 7 7"/></svg>`,
+ r:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 5 7 7-7 7"/></svg>`,
+ search:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`,
+ full:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>`,
+ swap:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg>`
+};
+function thumbHTML(l){
+  if(l.thumb)return `<img src="s/${l.thumb}.jpg" alt="" loading="lazy">`;
+  return `<div class="th-gen"><svg viewBox="0 0 100 60">${R(0,13).map(i=>`<rect x="${6+i*6.5}" y="${38-i*2-((i*13)%10)}" width="3.6" height="${8+((i*37)%22)}" fill="${i%3?'#08E186':'#FF6B6B'}"/>`).join("")}</svg><small>Class ${pad(l.n)}</small><b>${esc(l.t)}</b></div>`;
+}
+function card(l){
+  return `<a class="card" href="#class-${l.n}">
+    <div class="th">${thumbHTML(l)}<span class="badge">Class ${pad(l.n)}</span>${done.has(l.n)?'<span class="done">✓ Done</span>':""}</div>
+    <div class="who"><span class="av">${MARK}</span>Edge Trading Academy<span class="chip">Module ${l.m+1}</span></div>
+    <h3>${esc(l.t)}</h3>
+    <div class="meta"><span>${I.play}Recorded class</span><span>${I.slides}${l.slides.length?l.slides.length+" slides":"Video only"}</span></div>
+    <div class="foot"><b>Watch class →</b><span class="prog">${esc(MODULES[l.m])}</span></div>
+  </a>`;
+}
+const view=document.getElementById("view");
+
+/* ============ HOME ============ */
+function vHome(){
+  const nx=nextUp();
+  view.innerHTML=`
+  <section class="hero"><div class="wrap">
+    <svg class="dash" viewBox="0 0 70 50" aria-hidden="true">${R(0,9).map(i=>`<path d="M${4+i*6} ${44-(i%3)*6} l8 -14" stroke="#F2B33D" stroke-width="3.5" stroke-linecap="round"/>`).join("")}</svg>
+    <div>
+      <div class="kicker">Edge Trading Academy · Recorded Sessions</div>
+      <h1>Learn forex at your pace and trade with a <span class="hl">clear plan.${SW}</span></h1>
+      <p>Watch every class from the program with its slides open beside the video. Start with your first currency pair and work through to liquidity and order blocks.</p>
+      <div class="hero-ctas"><a class="btn btn-p" href="#class-${nx.n}">${done.size?`Continue Class ${nx.n}`:"Start a class"}</a><a class="btn btn-o" href="#classes">Browse classes</a></div>
+    </div>
+    <div class="hero-art">
+      <div class="frame"><img src="s/hero.jpg" alt="Glowing bar chart with a rising trend arrow"></div>
+      <div class="bubble circle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-7a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h7z"/></svg><b>14</b>classes</div>
+      <div class="bubble tr"><i>${I.slides}</i><div><b>${TOTAL_SLIDES}</b>class slides</div></div>
+      <div class="bubble bl"><i>%</i><div><b>${pct()}%</b>your progress</div></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="classesSec"><div class="wrap">
+    <div class="sec-h"><div><h2>All <span style="color:var(--accent-text)">Classes</span> of Edge</h2>${SWOOSH}</div>
+      <label class="search" for="q"><input id="q" type="search" placeholder="Search your class" value="${esc(searchQ)}"><span>${I.search}</span></label></div>
+    <div class="chips-box">
+      <button class="circ" id="chL" aria-label="Scroll topics left">${I.l}</button>
+      <div class="chips" id="chips">${[["All classes",-1],...MODULES.map((m,i)=>[m,i])].map(([n,i])=>`<button data-m="${i}" aria-pressed="${i===filterMod}">${esc(n)}</button>`).join("")}</div>
+      <button class="circ" id="chR" aria-label="Scroll topics right">${I.r}</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div></section>
+
+  <section class="sec" style="padding-top:0"><div class="wrap">
+    <div class="sec-h"><div><h2>Your <span style="color:var(--accent-text)">Learning</span> Path</h2>${SWOOSH}</div><a class="btn btn-o" href="#outline">Full outline</a></div>
+    <div class="path">${MODULES.map((m,i)=>{const ls=L.filter(l=>l.m===i),f=ls.filter(l=>done.has(l.n)).length;return `<a href="#classes" data-mod="${i}"><span class="n">${pad(i+1)}</span><b>${esc(m)}</b><span class="muted" style="font-size:13px">${esc(MOD_BLURB[i])}</span><span class="bar"><i style="width:${f/ls.length*100}%"></i></span><span class="muted" style="font-size:12px">${f} / ${ls.length} classes</span></a>`}).join("")}</div>
+  </div></section>
+
+  <section class="wrap"><div class="cta">
+    <div><small>Learn live with Edge</small><h2>Join a live batch with <span class="hl">Edge mentors${SW}</span></h2></div>
+    <svg class="doodle" viewBox="0 0 120 60" aria-hidden="true"><path d="M4 52 C 40 50, 70 30, 112 10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M98 8 L113 9 L107 22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <a class="btn btn-p" href="https://www.edgeacademy.ae" target="_blank" rel="noopener">Visit edgeacademy.ae</a>
+  </div></section>`;
+  wireGrid();
+}
+function wireGrid(){
+  const grid=document.getElementById("grid");
+  const draw=()=>{const q=searchQ.trim().toLowerCase();
+    const list=L.filter(l=>(filterMod<0||l.m===filterMod)&&(!q||(l.t+" "+l.d+" "+l.w.join(" ")).toLowerCase().includes(q)));
+    grid.innerHTML=list.length?list.map(card).join(""):`<div class="empty">No classes match “${esc(searchQ)}”. Try “candlestick”, “risk” or “liquidity”.</div>`;};
+  draw();
+  document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>{filterMod=+b.dataset.m;document.querySelectorAll("#chips button").forEach(x=>x.setAttribute("aria-pressed",x===b));draw()});
+  const ch=document.getElementById("chips");
+  document.getElementById("chL").onclick=()=>ch.scrollBy({left:-240});document.getElementById("chR").onclick=()=>ch.scrollBy({left:240});
+  const q=document.getElementById("q");q.oninput=()=>{searchQ=q.value;draw()};
+}
+
+/* ============ OUTLINE ============ */
+function vOutline(){
+  const nx=nextUp();
+  view.innerHTML=`
+  <section class="pagehead"><div class="wrap">
+    <div class="crumb"><a href="#home">Home</a> › Course outline</div>
+    <h1>Forex Trading Program: <span class="hl">Foundations to Smart Money${SW}</span></h1>
+    <p>Five modules ordered the way you'll use them on a live chart: market basics, platforms, technical analysis, risk and news, then smart money concepts.</p>
+  </div></section>
+  <section class="sec"><div class="wrap two">
+    <div style="display:flex;flex-direction:column;gap:28px;min-width:0">
+      <div class="box"><h2 style="font-size:22px;margin-bottom:16px">What you'll learn</h2><div class="learn-g">${[
+        "Read currency pairs and calculate pips, lots and P/L","Recognise 20+ candlestick patterns","Use TradingView and every MT5 order type",
+        "Map trend with structure, trendlines and S/R","Trade flags, double tops, head and shoulders and triangles","Run a capital plan with 1% risk and position sizing",
+        "Prepare for CPI, NFP and FOMC releases","Find liquidity, FVGs, BPRs and order blocks"].map(x=>`<div>${esc(x)}</div>`).join("")}</div></div>
+      <div><h2 style="font-size:22px;margin-bottom:14px">Course content <span class="muted" style="font-size:14px;font-weight:400">· ${L.length} classes · ${TOTAL_SLIDES} slides</span></h2>
+      <div class="acc">${MODULES.map((m,i)=>{const ls=L.filter(l=>l.m===i);return `<details ${i<2?"open":""}><summary>Module ${i+1}: ${esc(m)}<small>${ls.length} classes</small></summary>${ls.map(l=>`<a href="#class-${l.n}">${I.play}<span>${l.n}. ${esc(l.t)}</span><span class="r">${l.slides.length?l.slides.length+" slides":"Video only"}${done.has(l.n)?" · ✓":""}</span></a>`).join("")}</details>`}).join("")}</div></div>
+    </div>
+    <aside class="box side">
+      <b style="font-size:18px">Your progress</b>
+      <div class="progress-big"><i style="width:${pct()}%"></i></div>
+      <div class="muted" style="font-size:13px">${done.size} of ${L.length} classes complete</div>
+      <a class="btn btn-p" href="#class-${nx.n}" style="width:100%;margin-top:16px">${done.size?`Continue Class ${nx.n}`:"Start Class 1"}</a>
+      <ul><li><span>Classes</span><b>${L.length}</b></li><li><span>Modules</span><b>5</b></li><li><span>Slides</span><b>${TOTAL_SLIDES}</b></li><li><span>Instructor</span><b>Edge Trading Academy</b></li></ul>
+    </aside>
+  </div></section>`;
+}
+
+/* ============ MY LEARNING ============ */
+function vLearning(){
+  const prog=L.filter(l=>!done.has(l.n)),fin=L.filter(l=>done.has(l.n));
+  view.innerHTML=`
+  <section class="pagehead"><div class="wrap">
+    <div class="crumb"><a href="#home">Home</a> › My learning</div>
+    <h1>My <span class="hl">Learning${SW}</span></h1>
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:26px;max-width:640px"><div class="progress-big" style="flex:1;min-width:200px;margin:0"><i style="width:${pct()}%"></i></div><b>${pct()}% · ${done.size}/${L.length} classes</b><button class="btn btn-o" id="reset" style="height:38px">Reset</button></div>
+  </div></section>
+  <section class="sec"><div class="wrap">
+    <div class="sec-h"><h2>Up next</h2></div>
+    <div class="grid">${prog.length?prog.map(card).join(""):`<div class="empty">Every class is complete. Well done.</div>`}</div>
+    <div class="sec-h" style="margin-top:48px"><h2>Completed</h2></div>
+    <div class="grid">${fin.length?fin.map(card).join(""):`<div class="empty">Classes you mark complete in the classroom show up here.</div>`}</div>
+  </div></section>`;
+  const rs=document.getElementById("reset");let armed=false;
+  rs.onclick=()=>{if(!armed){armed=true;rs.textContent="Tap again to reset";setTimeout(()=>{armed=false;rs.textContent="Reset"},3000);return}done.clear();saveDone();vLearning()};
+}
+
+/* ============ CLASSROOM ============ */
+let deckKeys=null;
+function vRoom(n){
+  const l=L[n-1];
+  view.innerHTML=`
+  <div class="room-top"><div class="in">
+    <a class="logo" href="#home" aria-label="Back to Edge home">${MARK}</a>
+    <div class="t"><small>Class ${pad(n)}</small>${esc(l.t)}</div>
+    <div class="seg" role="group" aria-label="Layout">
+      <button data-lay="split" aria-pressed="${layout==="split"}">Video + Slides</button>
+      <button data-lay="video" aria-pressed="${layout==="video"}">Video</button>
+      <button data-lay="slides" aria-pressed="${layout==="slides"}">Slides</button>
+    </div>
+    <button class="rbtn hide-sm" id="swap" title="Swap sides">${I.swap}<span>Swap</span></button>
+    <button class="rbtn" id="prev" ${n===1?"disabled":""} aria-label="Previous class">${I.l}</button>
+    <button class="rbtn" id="next" ${n===L.length?"disabled":""} aria-label="Next class">${I.r}</button>
+  </div></div>
+
+  <div class="stage-wrap"><div class="split ${layout==="video"?"v-only":layout==="slides"?"s-only":""} ${swapped?"swap":""}" id="split">
+    <section class="pane video">
+      <div class="pane-h"><span class="dot"></span>Class recording<span class="sp"></span><a href="${viewUrl(l.id)}" target="_blank" rel="noopener">Open in Drive ↗</a></div>
+      <div class="vbox">${CAN_EMBED
+        ?`<iframe src="${embedUrl(l.id)}" title="${esc(l.t)} recording" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>`
+        :`<a class="poster" href="${viewUrl(l.id)}" target="_blank" rel="noopener">${l.thumb?`<img src="s/${l.thumb}.jpg" alt="">`:""}<span class="pl"></span><h3>${esc(l.t)}</h3><p>This claude.ai preview can't embed Google Drive, so the recording opens in a new tab. On your own website the video plays right here.</p></a>`}</div>
+    </section>
+    <section class="pane slides" id="slidesPane">
+      <div class="pane-h"><span class="dot g"></span>Class slides<span class="sp"></span>${l.slides.length?`<button class="rbtn" id="full">${I.full}<span>Full screen</span></button>`:""}</div>
+      ${l.slides.length?`<div class="deck">
+        <button class="dnav l" id="dL" aria-label="Previous slide">${I.l}</button>
+        <div class="track" id="track" tabindex="0" aria-label="Slides, use arrow keys">${l.slides.map((s,i)=>`<div class="slide"><img src="${s}" alt="Slide ${i+1}" loading="${i<2?"eager":"lazy"}"></div>`).join("")}</div>
+        <button class="dnav r" id="dR" aria-label="Next slide">${I.r}</button>
+        <div class="dbar"><span class="c" id="cnt">1 / ${l.slides.length}</span><div class="thumbs" id="thumbs">${l.slides.map((s,i)=>`<button aria-label="Slide ${i+1}"><img src="${s}" alt="" loading="lazy"></button>`).join("")}</div></div>
+      </div>`:`<div class="noslides"><div><b>No slides for this class</b>This session was a live screen share. Follow along in the recording.</div></div>`}
+    </section>
+  </div></div>
+
+  <div class="wrap below">
+    <div style="min-width:0">
+      <div class="cls-head"><div><div class="muted" style="font-size:14px">Module ${l.m+1} · ${esc(MODULES[l.m])}</div><h1>${esc(l.t)}</h1></div>
+        <button class="btn ${done.has(n)?"btn-o":"btn-p"}" id="doneBtn">${done.has(n)?"✓ Completed":"Mark as complete"}</button></div>
+      <div class="tabs" role="tablist"><button role="tab" data-p="ov" aria-selected="true">Overview</button><button role="tab" data-p="nt" aria-selected="false">My notes</button><button role="tab" data-p="rs" aria-selected="false">Resources</button></div>
+      <div id="p-ov"><p style="max-width:70ch;margin:0 0 20px">${esc(l.d)}</p><div class="box"><b style="display:block;margin-bottom:12px">Topics covered</b><div class="learn-g">${l.w.map(x=>`<div>${esc(x)}</div>`).join("")}</div></div></div>
+      <div id="p-nt" hidden><textarea class="note" id="note" placeholder="Key rules, levels and questions for your mentor…"></textarea><div class="muted" id="noteS" style="font-size:12px;margin-top:6px">Notes save in this browser.</div></div>
+      <div id="p-rs" hidden>
+        <div class="res"><span class="ic">MP4</span><div><b>Class ${n} recording</b><div class="muted" style="font-size:13px">Google Drive</div></div><a href="${viewUrl(l.id)}" target="_blank" rel="noopener">Open</a></div>
+        <div class="res"><span class="ic">PDF</span><div><b>Course PDF notes</b><div class="muted" style="font-size:13px">All class decks in one Drive folder</div></div><a href="${PDF_FOLDER}" target="_blank" rel="noopener">Open folder</a></div>
+      </div>
+    </div>
+    <aside class="curr">
+      <div class="curr-h"><b>Course content</b><div class="progress-big"><i style="width:${pct()}%"></i></div><span class="muted" style="font-size:13px">${done.size} of ${L.length} complete</span></div>
+      ${MODULES.map((m,i)=>`<div class="mh">Module ${i+1} · ${esc(m)}</div>${L.filter(x=>x.m===i).map(x=>`<button class="citem ${x.n===n?"active":""}" data-n="${x.n}"><span class="num ${done.has(x.n)&&x.n!==n?"ok":""}">${done.has(x.n)&&x.n!==n?"✓":pad(x.n)}</span><span><span class="tt">${esc(x.t)}</span><span class="sb">${x.slides.length?`Video · ${x.slides.length} slides`:"Video only"}</span></span></button>`).join("")}`).join("")}
+    </aside>
+  </div>`;
+
+  const go=k=>location.hash="class-"+k;
+  document.getElementById("prev").onclick=()=>go(n-1);
+  document.getElementById("next").onclick=()=>go(n+1);
+  document.getElementById("doneBtn").onclick=()=>{if(done.has(n))done.delete(n);else done.add(n);saveDone();vRoom(n)};
+  view.querySelectorAll(".citem").forEach(b=>b.onclick=()=>go(+b.dataset.n));
+  const split=document.getElementById("split");
+  let realign=()=>{};
+  view.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{layout=b.dataset.lay;store.set("edge.layout",layout);
+    view.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    split.classList.toggle("v-only",layout==="video");split.classList.toggle("s-only",layout==="slides");realign()});
+  document.getElementById("swap").onclick=()=>{swapped=!swapped;store.set("edge.swap",swapped);split.classList.toggle("swap",swapped)};
+  view.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{view.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));["ov","nt","rs"].forEach(k=>document.getElementById("p-"+k).hidden=k!==b.dataset.p)});
+  const note=document.getElementById("note");note.value=store.get("edge.note."+n,"");let nt;
+  note.oninput=()=>{clearTimeout(nt);nt=setTimeout(()=>{store.set("edge.note."+n,note.value);document.getElementById("noteS").textContent="Saved"},400)};
+
+  if(!l.slides.length)return;
+  const T=document.getElementById("track"),C=document.getElementById("cnt"),TH=[...document.querySelectorAll("#thumbs button")],N=l.slides.length,P=document.getElementById("slidesPane");
+  let cur=0;
+  const set=i=>{cur=Math.max(0,Math.min(N-1,i));C.textContent=`${cur+1} / ${N}`;
+    document.getElementById("dL").disabled=cur===0;document.getElementById("dR").disabled=cur===N-1;
+    TH.forEach((b,j)=>b.setAttribute("aria-current",j===cur));const tb=TH[cur],tr=tb.parentElement;tr.scrollTo({left:tb.offsetLeft-tr.offsetLeft-tr.clientWidth/2+32,behavior:"smooth"});
+    slidePos[n]=cur;store.set("edge.slide",slidePos)};
+  const to=i=>T.scrollTo({left:T.clientWidth*Math.max(0,Math.min(N-1,i)),behavior:"smooth"});
+  realign=()=>requestAnimationFrame(()=>T.scrollTo({left:T.clientWidth*cur,behavior:"instant"}));
+  let st;T.addEventListener("scroll",()=>{clearTimeout(st);st=setTimeout(()=>set(Math.round(T.scrollLeft/T.clientWidth)),70)},{passive:true});
+  document.getElementById("dL").onclick=()=>to(cur-1);document.getElementById("dR").onclick=()=>to(cur+1);
+  TH.forEach((b,j)=>b.onclick=()=>to(j));
+  const F=document.getElementById("full");
+  const setFull=on=>{P.classList.toggle("full",on);F.querySelector("span").textContent=on?"Exit full screen":"Full screen";document.body.style.overflow=on?"hidden":"";realign()};
+  F.onclick=()=>setFull(!P.classList.contains("full"));
+  deckKeys=e=>{if(e.target.matches("input,textarea"))return;
+    if(e.key==="ArrowRight"){e.preventDefault();to(cur+1)}else if(e.key==="ArrowLeft"){e.preventDefault();to(cur-1)}
+    else if(e.key==="Escape"&&P.classList.contains("full"))setFull(false)};
+  const start=slidePos[n]||0;requestAnimationFrame(()=>{T.scrollLeft=T.clientWidth*start;set(start)});
+  window.onresize=realign;
+}
+
+/* ============ ROUTER ============ */
+document.addEventListener("keydown",e=>deckKeys&&deckKeys(e));
+function route(){
+  deckKeys=null;window.onresize=null;document.body.style.overflow="";
+  const h=(location.hash||"#home").slice(1)||"home";
+  const m=/^class-(\d+)$/.exec(h);
+  document.body.classList.toggle("room",!!m);
+  document.querySelectorAll("#links a[data-r]").forEach(a=>{if(a.dataset.r===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  document.getElementById("links").classList.remove("open");
+  const nx=nextUp();const cta=document.getElementById("navCta");cta.href="#class-"+nx.n;cta.textContent=done.size?`Continue Class ${nx.n}`:"Start Class 1";
+  if(m&&+m[1]>=1&&+m[1]<=L.length)vRoom(+m[1]);
+  else if(h==="outline")vOutline();
+  else if(h==="learning")vLearning();
+  else if(h==="classes"){vHome();requestAnimationFrame(()=>document.getElementById("classesSec").scrollIntoView());return}
+  else vHome();
+  window.scrollTo(0,0);
+}
+document.addEventListener("click",e=>{const a=e.target.closest("[data-mod]");if(a&&a.getAttribute("href")==="#classes"){filterMod=+a.dataset.mod;if(location.hash==="#classes")route()}});
+document.getElementById("menuBtn").onclick=e=>{const o=document.getElementById("links").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",o)};
+addEventListener("hashchange",route);
+route();
+</script>
+
+</body>
+</html>
