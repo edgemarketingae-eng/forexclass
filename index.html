@@ -40,6 +40,7 @@ p{margin:0}
 @media (min-width:720px){.wrap{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}}
 .hl{color:var(--accent-ink)}
 .muted{color:var(--muted)}
+.in-app .app-only-hide{display:none!important}
 
 /* ---------- nav ---------- */
 .nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
@@ -341,7 +342,7 @@ body.room .site-only{display:none}
     </div>
   </div>
   <div class="mnav" id="mnav"><div class="wrap">
-    <a href="#home">Home</a><a href="#classes">Classes</a><a href="#outline">Course outline</a><a href="#learning">My learning</a><a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">edgeacademy.ae ↗</a>
+    <a href="#home">Home</a><a href="#classes">Classes</a><a href="#outline">Course outline</a><a href="#learning">My learning</a><a class="app-only-hide" href="download/edge-academy.apk">Download Android app ↓</a><a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">edgeacademy.ae ↗</a>
   </div></div>
 </header>
 
@@ -351,7 +352,7 @@ body.room .site-only{display:none}
   <div class="wrap">
     <div class="foot">
       <div><img src="assets/edge-logo.png" alt="Edge Trading Academy" width="140" height="34" style="height:34px;width:auto"><p class="tagline">Learn Forex. Build a skill. Create more possibilities.</p></div>
-      <div><h4>Learn</h4><ul><li><a href="#classes">All classes</a></li><li><a href="#outline">Course outline</a></li><li><a href="#learning">My learning</a></li></ul></div>
+      <div><h4>Learn</h4><ul><li><a href="#classes">All classes</a></li><li><a href="#outline">Course outline</a></li><li><a href="#learning">My learning</a></li><li class="app-only-hide"><a href="download/edge-academy.apk">Android app (APK)</a></li></ul></div>
       <div><h4>Modules</h4><ul><li><a href="#classes" data-mod="0">Forex Foundations</a></li><li><a href="#classes" data-mod="2">Technical Analysis</a></li><li><a href="#classes" data-mod="4">Smart Money Concepts</a></li></ul></div>
       <div><h4>Edge Academy</h4><ul><li><a href="https://www.edgeacademy.ae" target="_blank" rel="noopener">edgeacademy.ae</a></li><li><a href="https://joinedge.vercel.app/#course" target="_blank" rel="noopener">Join a live batch</a></li><li><a href="https://drive.google.com/drive/u/0/folders/1obKEM8mnOUr4eGRdvCj5LysDaQes75Wr" target="_blank" rel="noopener">PDF notes folder</a></li></ul></div>
     </div>
@@ -360,6 +361,8 @@ body.room .site-only{display:none}
 </footer>
 
 <script>
+/* Inside the Edge Academy Android app, hide the "download the app" links */
+if(/EdgeAcademyApp/.test(navigator.userAgent))document.documentElement.classList.add("in-app");
 /* ================= DATA ================= */
 const PDF_FOLDER="https://drive.google.com/drive/u/0/folders/1obKEM8mnOUr4eGRdvCj5LysDaQes75Wr";
 const MODULES=["Forex Foundations","Platforms & Tools","Technical Analysis","Risk & Fundamentals","Smart Money Concepts"];
